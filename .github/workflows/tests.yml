@@ -1,0 +1,40 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "41 6 * * *" # daily, to catch Hermes changes that break the plugin
+
+permissions:
+  contents: read
+
+jobs:
+  hermes:
+    name: Hermes ${{ matrix.ref }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # v0.22.6 is the floor in plugin.yaml.
+        ref: [v0.22.6, main]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: NousResearch/hermes-agent
+          ref: ${{ matrix.ref }}
+          path: hermes
+      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+      - name: Install Hermes
+        working-directory: hermes
+        run: uv sync --frozen --group dev --python 3.14
+      - name: Tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}/hermes
+        run: hermes/.venv/bin/python -m pytest tests -q -rs
+      - name: hermes plugins validate
+        env:
+          PYTHONPATH: ${{ github.workspace }}/hermes
+          HERMES_HOME: ${{ runner.temp }}/hermes-home
+        run: hermes/.venv/bin/python -m hermes_cli.main plugins validate wiro --install-deps

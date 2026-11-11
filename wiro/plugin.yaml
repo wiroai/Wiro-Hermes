@@ -1,0 +1,11 @@
+name: wiro
+kind: model-provider
+version: 1.0.0
+description: Wiro AI LLM gateway as a Hermes model provider, with GPT, Claude, Gemini, DeepSeek and more on one OpenAI-compatible API and one key.
+author: Wiro AI
+requires_hermes: ">=0.22.6"
+requires_env:
+  - name: WIRO_API_KEY
+    description: Wiro AI project API key
+    url: https://wiro.ai/panel/project
+    secret: true
