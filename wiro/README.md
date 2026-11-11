@@ -14,7 +14,7 @@ hermes model
 ```
 
 Before the catalog listing lands, install from the repository instead:
-`hermes plugins install "https://github.com/wiroai/hermes-wiro-provider#wiro"`.
+`hermes plugins install "https://github.com/wiroai/Wiro-Hermes#wiro"`.
 
 Create the key under your project at [wiro.ai/panel/project](https://wiro.ai/panel/project). For a
 Signature project, the value is `YOUR_API_KEY:YOUR_API_SECRET`. In `hermes model`, select

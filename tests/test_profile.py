@@ -35,7 +35,7 @@ def test_models_match_the_recorded_catalog():
 def test_models_match_the_live_catalog():
     request = urllib.request.Request(
         plugin.BASE_URL + "/models",
-        headers={"Authorization": "Bearer " + os.environ["WIRO_API_KEY"], "User-Agent": "hermes-wiro-provider-tests"},
+        headers={"Authorization": "Bearer " + os.environ["WIRO_API_KEY"], "User-Agent": "wiro-hermes-tests"},
     )
     with urllib.request.urlopen(request, timeout=30) as response:
         _check_against(json.load(response)["data"])
