@@ -67,4 +67,4 @@ config_schema:
   wait_seconds:
     type: int
     default: 240
-    description: Seconds a tool waits for a task before handing it to wiro_task (0 to 400)
+    description: Seconds a tool waits for a task before handing it to wiro_task (0 to 360)

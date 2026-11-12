@@ -22,8 +22,8 @@ DEFAULT_MODELS = {
 
 DEFAULT_WAIT_SECONDS = 240
 # Hermes stops a tool call after 420 s by default (timeouts.tools.concurrent_batch), so a wait
-# stays under it and a longer job is picked up again with wiro_task.
-MAX_WAIT_SECONDS = 400
+# stays under it with room to download the files, and a longer job is picked up with wiro_task.
+MAX_WAIT_SECONDS = 360
 
 # Category names Tool/List filters on, for the search tool's description.
 SEARCH_CATEGORIES = (

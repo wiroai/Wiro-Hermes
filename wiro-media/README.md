@@ -100,7 +100,7 @@ the desktop app. Transcripts and LLM answers come back as text.
 
 ### Long jobs
 
-A tool waits up to `wait_seconds` (240 by default, at most 400, inside Hermes' tool time limit).
+A tool waits up to `wait_seconds` (240 by default, at most 360, inside Hermes' tool time limit).
 A task still running then keeps going on Wiro AI: the result carries its `task_token`, and
 `wiro_task` waits for it and saves the files without starting a second run.
 
