@@ -24,6 +24,11 @@ Signature project, the value is `YOUR_API_KEY:YOUR_API_SECRET`. In `hermes model
 hermes chat --provider wiro -m claude/sonnet-5
 ```
 
+## Media tools
+
+For images, video, speech, music, transcription and 3D, add the companion
+[`wiro-media`](../wiro-media/README.md) plugin from the same repository. It uses the same key.
+
 ## Models
 
 `hermes model` lists the live catalog, `GET https://llm.wiro.ai/v1/models`. The models below are
