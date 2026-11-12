@@ -1,0 +1,70 @@
+name: wiro-media
+kind: standalone
+version: 2.0.0
+manifest_version: 2
+description: Wiro AI image, video, speech, music, transcription and 3D models as Hermes tools, plus Wiro AI as a backend for image_generate, video_generate, text_to_speech and speech-to-text.
+author: Wiro AI
+license: MIT
+homepage: https://github.com/wiroai/Wiro-Hermes
+tags: [image, video, speech, music, transcription, 3d, media, workflows]
+requires_hermes: ">=0.22.6"
+provides_tools:
+  - wiro_generate_image
+  - wiro_edit_image
+  - wiro_generate_video
+  - wiro_text_to_speech
+  - wiro_generate_music
+  - wiro_transcribe
+  - wiro_generate_3d
+  - wiro_search_models
+  - wiro_model_info
+  - wiro_run_model
+  - wiro_task
+  - wiro_workflows
+  - wiro_run_workflow
+requires_env:
+  - name: WIRO_API_KEY
+    description: Wiro AI project API key (KEY, or KEY:SECRET for a signature project)
+    url: https://wiro.ai/panel/project
+    secret: true
+config_schema:
+  image_model:
+    type: str
+    default: google/nano-banana-2-1
+    description: Default model of wiro_generate_image and of image_generate with Wiro AI as its backend
+  edit_model:
+    type: str
+    default: google/nano-banana-2-1
+    description: Default model of wiro_edit_image operation edit
+  upscale_model:
+    type: str
+    default: xinntao/real-esrgan
+    description: Default model of wiro_edit_image operation upscale
+  background_model:
+    type: str
+    default: wiro/remove-background
+    description: Default model of wiro_edit_image operation remove_background
+  video_model:
+    type: str
+    default: bytedance/seedance-v1-pro-fast
+    description: Default model of wiro_generate_video and of video_generate with Wiro AI as its backend
+  speech_model:
+    type: str
+    default: elevenlabs/eleven-v4-turbo
+    description: Default model of wiro_text_to_speech and of text_to_speech with Wiro AI as its backend
+  music_model:
+    type: str
+    default: elevenlabs/text-to-music-v2
+    description: Default model of wiro_generate_music
+  transcribe_model:
+    type: str
+    default: elevenlabs/speech-to-text
+    description: Default model of wiro_transcribe and of speech-to-text with Wiro AI as its backend
+  model3d_model:
+    type: str
+    default: microsoft/trellis-2
+    description: Default model of wiro_generate_3d
+  wait_seconds:
+    type: int
+    default: 240
+    description: Seconds a tool waits for a task before handing it to wiro_task (0 to 400)

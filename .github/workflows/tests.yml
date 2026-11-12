@@ -29,12 +29,19 @@ jobs:
       - name: Install Hermes
         working-directory: hermes
         run: uv sync --frozen --group dev --python 3.14
+      - name: ffmpeg (voice note conversion tests)
+        run: command -v ffmpeg || (sudo apt-get update -q && sudo apt-get install -yq --no-install-recommends ffmpeg)
       - name: Tests
         env:
           PYTHONPATH: ${{ github.workspace }}/hermes
         run: hermes/.venv/bin/python -m pytest tests -q -rs
-      - name: hermes plugins validate
+      - name: hermes plugins validate wiro
         env:
           PYTHONPATH: ${{ github.workspace }}/hermes
           HERMES_HOME: ${{ runner.temp }}/hermes-home
         run: hermes/.venv/bin/python -m hermes_cli.main plugins validate wiro --install-deps
+      - name: hermes plugins validate wiro-media
+        env:
+          PYTHONPATH: ${{ github.workspace }}/hermes
+          HERMES_HOME: ${{ runner.temp }}/hermes-home-media
+        run: hermes/.venv/bin/python -m hermes_cli.main plugins validate wiro-media --install-deps
