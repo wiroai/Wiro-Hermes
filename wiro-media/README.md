@@ -25,6 +25,8 @@ gateway too.
 Then ask for what you want: "make a poster of a lighthouse", "remove the background of this
 photo", "turn this picture into a five second clip", "transcribe this voice note".
 
+![Hermes makes a mug photo with wiro_generate_image and reports the cost, next to the saved image](../docs/screenshots/generate-image.png)
+
 ## Tools
 
 | Tool | What it does |
@@ -84,6 +86,8 @@ outside its media caches are never read. With a sandboxed terminal backend (Dock
 and the like), only files in Hermes' media cache are read. Voice notes in Ogg Opus (Telegram,
 WhatsApp) and bmp, tiff or avif images are converted to m4a or png with your local `ffmpeg`
 before the upload, when ffmpeg is installed.
+
+![Hermes transcribes a voice note with wiro_transcribe and answers out loud with wiro_text_to_speech](../docs/screenshots/voice-note.png)
 
 Outputs are saved in Hermes' media cache, the folder and naming Hermes' own image and video
 providers use:

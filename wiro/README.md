@@ -18,7 +18,11 @@ Before the catalog listing lands, install from the repository instead:
 
 Create the key under your project at [wiro.ai/panel/project](https://wiro.ai/panel/project). For a
 Signature project, the value is `YOUR_API_KEY:YOUR_API_SECRET`. In `hermes model`, select
-**Wiro AI** and pick a model. One-off use:
+**Wiro AI** and pick a model:
+
+![hermes model with Wiro AI picked as the provider, then the Wiro AI model list](../docs/screenshots/hermes-model.png)
+
+One-off use:
 
 ```sh
 hermes chat --provider wiro -m claude/sonnet-5

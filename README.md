@@ -24,6 +24,23 @@ Hermes loads model providers and tool plugins through separate paths, so they ar
 install one or both. Runs are paid as you go from your Wiro AI wallet. API docs:
 [wiro.ai/docs](https://wiro.ai/docs).
 
+With `wiro` installed, `hermes model` lists Wiro AI with the other providers. Pick it, then pick
+a model:
+
+![hermes model with Wiro AI picked as the provider, then the Wiro AI model list](docs/screenshots/hermes-model.png)
+
+## In use
+
+Ask in plain words. Hermes finds the right `wiro_*` tool, runs a Wiro AI model, saves the file
+and says what the run cost:
+
+![Hermes makes a mug photo with wiro_generate_image and reports the cost, next to the saved image](docs/screenshots/generate-image.png)
+
+Voice notes work the same way: Hermes writes out what was said and answers out loud with a Wiro
+AI voice:
+
+![Hermes transcribes a voice note with wiro_transcribe and answers out loud with wiro_text_to_speech](docs/screenshots/voice-note.png)
+
 ## Development
 
 Tests run against a Hermes source checkout (`HERMES_SOURCE`, a sibling `hermes-agent`
