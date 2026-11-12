@@ -1,19 +1,28 @@
 # Wiro-Hermes
 
-[Wiro AI](https://wiro.ai/llm) as a model provider for
-[Hermes Agent](https://github.com/NousResearch/hermes-agent): one OpenAI-compatible API and one key
-for GPT, Claude, Gemini, DeepSeek, GLM, Kimi and Grok models.
+[Wiro AI](https://wiro.ai) for [Hermes Agent](https://github.com/NousResearch/hermes-agent): image,
+video, speech, music, transcription and 3D tools with 1,000+ models, and the Wiro AI LLM gateway as
+a model provider, all on one API key.
 
-The plugin lives in [`wiro/`](wiro/); its [README](wiro/README.md) covers setup, models and
-reasoning levels.
+| Plugin | What it adds |
+| --- | --- |
+| [`wiro-media`](wiro-media/) | Thirteen `wiro_*` tools: generate and edit images, make video from a prompt or a picture, read text aloud, compose music, transcribe audio, build 3D models, search the catalog with prices, and run any model or workflow. Wiro AI as the backend of Hermes' own `image_generate`, `video_generate`, `text_to_speech` and voice message transcription. A skill with recipes. |
+| [`wiro`](wiro/) | The Wiro AI LLM gateway as a model provider: GPT, Claude, Gemini, DeepSeek, GLM, Kimi and Grok models on one OpenAI-compatible API. |
 
 ```sh
-hermes plugins install wiro
-hermes model   # select Wiro AI, paste WIRO_API_KEY
+hermes plugins install wiro-media --enable   # tools and media backends
+hermes plugins install wiro                  # chat models, then pick Wiro AI in `hermes model`
+hermes config set WIRO_API_KEY <your-key>
 ```
 
-Create a key at [wiro.ai/panel/project](https://wiro.ai/panel/project). API docs:
-[wiro.ai/docs/completions-api](https://wiro.ai/docs/completions-api).
+Until the `wiro-media` catalog listing lands, install it from the repository:
+`hermes plugins install "https://github.com/wiroai/Wiro-Hermes#wiro-media" --enable`.
+
+Create a key at [wiro.ai/panel/project](https://wiro.ai/panel/project). Each plugin's README
+covers setup, models and settings: [`wiro-media`](wiro-media/README.md), [`wiro`](wiro/README.md).
+Hermes loads model providers and tool plugins through separate paths, so they are two plugins;
+install one or both. Runs are paid as you go from your Wiro AI wallet. API docs:
+[wiro.ai/docs](https://wiro.ai/docs).
 
 ## Development
 
@@ -23,10 +32,13 @@ directory, or `PYTHONPATH`):
 ```sh
 python -m pytest tests -q
 hermes plugins validate wiro --install-deps
+hermes plugins validate wiro-media --install-deps
 ```
 
-With `WIRO_API_KEY` set, `WIRO_LIVE_CATALOG=1 python -m pytest tests -q` also compares the model
-table against the live catalog.
+The media tests run the plugin inside Hermes against an in-memory Wiro AI API, so they need no
+key; with `ffmpeg` installed they also cover the voice note conversion. With `WIRO_API_KEY` set,
+`WIRO_LIVE_CATALOG=1 python -m pytest tests -q` also compares the model provider's table against
+the live catalog.
 
 MIT license.
 
