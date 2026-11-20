@@ -305,6 +305,33 @@ def test_api_refusals_are_explained(wiro):
     assert "is not a Wiro AI model ID" in call("wiro_model_info", {"model": "nonsense"})["error"]
 
 
+def test_controls_refusals_say_what_to_do_next(wiro):
+    run = "/Run/google/nano-banana-2-1"
+    rule = ("This API key can't use Image Generation models, and google/nano-banana-2-1 is one of them. "
+            "Model Access rules decide which models can run.")
+    wiro.handlers[run] = lambda body: {"result": False, "errors": [{"code": 92, "message": rule}]}
+    blocked = call("wiro_generate_image", {"prompt": "x"})["error"]
+    assert rule[:-1] in blocked and "code 92" in blocked
+    assert "Do not run another model in its place on your own" in blocked and "let them choose" in blocked
+    assert "https://wiro.ai/panel/controls/model-access" in blocked and "Add credits" not in blocked
+    # Nothing was tried in its place.
+    assert len(wiro.api_calls(run)) == 1 and [path for path, _b, _h in wiro.calls if path.startswith("/Run/")] == [run]
+
+    used = "Your monthly spend limit is reached ($5.00 of $5.00). It resets on December 1, 2026 at 00:00 UTC."
+    wiro.handlers[run] = lambda body: {"result": False, "errors": [{"code": 93, "message": used}]}
+    limited = call("wiro_generate_image", {"prompt": "x"})["error"]
+    assert used[:-1] in limited and "code 93" in limited and "Adding credits does not help" in limited
+    assert "https://wiro.ai/panel/controls/spend-limits" in limited
+    assert "cheaper setting" not in limited and "in progress" not in limited
+
+    left = ("The monthly spend limit for the API has $3.10 left of $5.00, and this run costs $4.00. "
+            "Runs in progress hold $1.20 of it. It resets on December 1, 2026 at 00:00 UTC.")
+    wiro.handlers[run] = lambda body: {"result": False, "errors": [{"code": 93, "message": left}]}
+    too_big = call("wiro_generate_image", {"prompt": "x"})["error"]
+    assert "a cheaper setting may fit" in too_big and "only with the user's yes" in too_big
+    assert "Runs still in progress hold part of the limit" in too_big
+
+
 def test_task_list_status_and_cancel(wiro):
     wiro.task_list = [task_row("tok-9", "task_postprocess_end", taskid="9", pexit="0", totalcost="0.05",
                                chargedcost="0.05")]

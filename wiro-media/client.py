@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import re
 import threading
 import time
 import urllib.error
@@ -24,6 +25,19 @@ API_URL = "https://api.wiro.ai/v1"
 USER_AGENT = f"wiro-hermes/{VERSION} (+https://github.com/wiroai/Wiro-Hermes)"
 DEPOSIT_URL = "https://wiro.ai/panel/wallet/deposit/credit-card"
 KEYS_URL = "https://wiro.ai/panel/project"
+MODEL_ACCESS_URL = "https://wiro.ai/panel/controls/model-access"
+SPEND_LIMITS_URL = "https://wiro.ai/panel/controls/spend-limits"
+
+# Wiro AI refuses a run before it starts, and charges nothing, when the account's Controls stop it:
+# a Model Access rule that blocks the model (92) or a spend limit with no room for the run (93).
+# The refusal's own text names the rule or the limit, and when the limit resets.
+MODEL_ACCESS_CODE = 92
+SPEND_LIMIT_CODE = 93
+CHANGERS = "the account owner, a team admin or the organization owner"
+# A run whose price is known and does not fit: "... has $3.10 left of $5.00, and this run costs $4.00."
+LEFT_OF = re.compile(r"\bhas \$\d[\d,]*(?:\.\d+)? left of\b")
+# Runs that were let in earlier and still hold part of the limit: "Runs in progress hold $1.20 of it."
+HELD = re.compile(r"\bin progress hold\b")
 
 # Task/Detail statuses that close a task. Every other status, a persisted "task_error"
 # included, means the task is still in progress.
@@ -130,6 +144,30 @@ def error_text(body: Any) -> tuple[str, set[int]]:
 
 
 def _hint(codes: set[int], status: int, text: str) -> str:
+    if MODEL_ACCESS_CODE in codes:
+        return (
+            " A Model Access rule blocks this model (code 92), so nothing ran and nothing was charged. Do not run"
+            " another model in its place on your own: tell the user which rule blocked it (the refusal names it)"
+            f" and let them choose another model, or ask {CHANGERS} to change the rule at {MODEL_ACCESS_URL}."
+        )
+    if SPEND_LIMIT_CODE in codes:
+        hint = (
+            " A spend limit stopped this run (code 93), so nothing ran and nothing was charged."
+            " Adding credits does not help."
+        )
+        if LEFT_OF.search(text):
+            hint += (
+                " The run costs more than the limit has left, so a cheaper setting may fit (a lower resolution, a"
+                " shorter length, fewer outputs): offer it with its cost and run it only with the user's yes."
+            )
+        if HELD.search(text):
+            hint += (
+                " Runs still in progress hold part of the limit and free it when they end, so this run may fit"
+                " then: run it again only with the user's yes."
+            )
+        return hint + (
+            f" Otherwise it stays refused until the limit resets or {CHANGERS} raises it at {SPEND_LIMITS_URL}."
+        )
     if 97 in codes or "insufficient" in text.lower():
         return f" Add credits at {DEPOSIT_URL} and run it again."
     if 96 in codes:

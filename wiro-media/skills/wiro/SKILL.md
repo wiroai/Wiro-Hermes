@@ -72,6 +72,20 @@ A failed task is not charged. Read the `error`, then change one thing: a setting
 offers (see `wiro_model_info`), a shorter prompt, a different input file, or another model from
 `wiro_search_models`. A refused input names the parameter it needs.
 
+Two refusals come from the user's own account settings, so they are not fixed by changing one
+thing. Nothing ran and nothing was charged:
+
+- **Model Access rule (code 92):** a rule of the user's account or team blocks the model. Never
+  run another model in its place on your own. Tell the user which rule blocked it (the error names
+  it) and let them choose: another model, or asking the account owner, a team admin or the
+  organization owner to change the rule at https://wiro.ai/panel/controls/model-access.
+- **Spend limit (code 93):** a spend limit has no room for the run. Tell the user which limit it is
+  and when it resets (the error says both). Adding credits does not help. Do not run it again until
+  the limit resets or the account owner, a team admin or the organization owner raises it at
+  https://wiro.ai/panel/controls/spend-limits. When the error says the run costs more than the
+  limit has left, offer a cheaper setting (a lower resolution, a shorter length, fewer outputs) with
+  its cost in one line from `wiro_model_info`, and run it only with the user's yes.
+
 ## Recipes
 
 - **Product shot to ad clip:** `wiro_edit_image` with `remove_background` on the photo, then
