@@ -149,13 +149,20 @@ per second or per character, as the model's page shows. `wiro_search_models` and
 charged. Searching, reading models and workflows, and checking tasks are free. Prices are on
 [wiro.ai/models](https://wiro.ai/models).
 
+The [Spend Limits](https://wiro.ai/panel/controls/spend-limits) and
+[Model Access](https://wiro.ai/panel/controls/model-access) rules of your Wiro AI account or team
+apply here too. A run they stop is refused before it starts and costs nothing, and the error names
+the limit or the rule. The plugin's skill tells the model not to switch to another model on its
+own when a rule blocks one.
+
 ## Scope
 
 - **Network:** requests go to `https://api.wiro.ai/v1` with the key Hermes reads
   (`WIRO_API_KEY`, through Hermes' secret scope): prompts, settings, and input files you pass.
   Output files are downloaded only from Wiro AI hosts (`*.wiro.ai`). No other host is contacted.
 - **Spending:** every generation spends your Wiro AI balance without a Hermes approval prompt;
-  the model can choose costly options (high resolution, long video) when asked to.
+  the model can choose costly options (high resolution, long video) when asked to. A spend limit
+  on wiro.ai caps what it can spend.
 - **Files:** reads the local input files described above, writes outputs under
   `cache/generated/` in your Hermes home, and runs `ffmpeg` to convert audio or images in the
   formats above when it is installed.
