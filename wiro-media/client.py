@@ -155,19 +155,21 @@ def _hint(codes: set[int], status: int, text: str) -> str:
             " A spend limit stopped this run (code 93), so nothing ran and nothing was charged."
             " Adding credits does not help."
         )
-        if LEFT_OF.search(text):
+        left_of = LEFT_OF.search(text)
+        held = HELD.search(text)
+        if left_of:
             hint += (
                 " The run costs more than the limit has left, so a cheaper setting may fit (a lower resolution, a"
                 " shorter length, fewer outputs): offer it with its cost and run it only with the user's yes."
             )
-        if HELD.search(text):
+        if held:
             hint += (
                 " Runs still in progress hold part of the limit and free it when they end, so this run may fit"
                 " then: run it again only with the user's yes."
             )
-        return hint + (
-            f" Otherwise it stays refused until the limit resets or {CHANGERS} raises it at {SPEND_LIMITS_URL}."
-        )
+        # "Otherwise" only follows a way the run may still fit.
+        lead = " Otherwise it" if left_of or held else " It"
+        return hint + f"{lead} stays refused until the limit resets or {CHANGERS} raises it at {SPEND_LIMITS_URL}."
     if 97 in codes or "insufficient" in text.lower():
         return f" Add credits at {DEPOSIT_URL} and run it again."
     if 96 in codes:

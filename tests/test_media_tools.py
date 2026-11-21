@@ -331,6 +331,18 @@ def test_controls_refusals_say_what_to_do_next(wiro):
     assert "a cheaper setting may fit" in too_big and "only with the user's yes" in too_big
     assert "Runs still in progress hold part of the limit" in too_big
 
+    # The last sentence says "Otherwise" only after a way the run may still fit.
+    held = ("Your daily spend limit is reached ($5.00 of $5.00). Runs in progress hold $1.20 of it. "
+            "It resets at 00:00 UTC.")
+    left_only = "The daily spend limit for the API has $3.10 left of $5.00, and this run costs $4.00. It resets at 00:00 UTC."
+    last = (" stays refused until the limit resets or the account owner, a team admin or the organization owner"
+            " raises it at https://wiro.ai/panel/controls/spend-limits.")
+    assert limited.endswith(" Adding credits does not help. It" + last) and "Otherwise" not in limited
+    assert too_big.endswith(" Otherwise it" + last)
+    for message in (held, left_only):
+        wiro.handlers[run] = lambda body, message=message: {"result": False, "errors": [{"code": 93, "message": message}]}
+        assert call("wiro_generate_image", {"prompt": "x"})["error"].endswith("with the user's yes. Otherwise it" + last)
+
 
 def test_task_list_status_and_cancel(wiro):
     wiro.task_list = [task_row("tok-9", "task_postprocess_end", taskid="9", pexit="0", totalcost="0.05",
