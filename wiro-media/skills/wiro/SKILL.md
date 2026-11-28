@@ -1,7 +1,7 @@
 ---
 name: wiro
 description: "Make and edit images, video, speech, music, transcripts and 3D models with Wiro AI's model catalog."
-version: 2.0.0
+version: 2.0.1
 author: Wiro AI
 license: MIT
 metadata:
