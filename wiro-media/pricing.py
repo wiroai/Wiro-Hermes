@@ -14,17 +14,19 @@ from collections.abc import Mapping
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
+# Wiro's price methods and the words shown after a price; a tool output never shows the id.
 PRICE_METHOD_LABELS = {
-    "cpr": "per run",
-    "cps": "per second of run time",
-    "cpo": "per output",
-    "cpt": "per input and output token",
-    "cp-pixel": "by image size",
-    "cp-audiosecondslength": "per second of input audio",
-    "cp-promptlength": "per prompt character",
-    "cp-outputVideoLength": "per video second",
-    "cp-realtimeturn": "per turn",
-    "cp-readoutput": "set by the run when it ends",
+    "per-run": "per run",
+    "per-run-second": "per second of run time",
+    "per-output-file": "per output file",
+    "per-total-token": "per input and output token",
+    "per-output-megapixel": "per output megapixel",
+    "per-input-character": "per prompt character",
+    "per-input-audio-second": "per second of input audio",
+    "per-input-video-second": "per second of input video",
+    "per-output-video-second": "per second of output video",
+    "per-realtime-turn": "per conversation turn",
+    "reported-price": "set when the run ends",
 }
 NO_FIXED_PRICE = "no fixed price: the charge follows the run time and is set when the run ends"
 _QUANTITY = re.compile(r"^QUANTITY:(\d+)$")
@@ -72,14 +74,14 @@ def price_summary(model: Mapping[str, Any]) -> str:
     """The model's price on one line."""
     rows = price_rows(model)
     if rows:
-        if any(row.get("priceMethod") == "cp-realtimeturn" for row in rows):
+        if any(row.get("priceMethod") == "per-realtime-turn" for row in rows):
             note = next((_note(row) for row in rows if _note(row)), "")
-            return f"billed turn by turn in a live session{': ' + note if note else ''}"
+            return f"billed per conversation turn in a live session{': ' + note if note else ''}"
         billed = [row for row in rows if row.get("priceMethod") in PRICE_METHOD_LABELS]
         if not billed:
             return NO_FIXED_PRICE
         parts: list[str] = []
-        unit_rows = [row for row in billed if row.get("priceMethod") not in ("cp-readoutput", "cp-pixel")]
+        unit_rows = [row for row in billed if row.get("priceMethod") not in ("reported-price", "per-output-megapixel")]
         if unit_rows:
             by_label: dict[str, list[float]] = {}
             for row in unit_rows:
@@ -90,15 +92,15 @@ def price_summary(model: Mapping[str, Any]) -> str:
                 low, high = min(amounts), max(amounts)
                 span = money(low) if low == high else f"{money(low)} to {money(high)}"
                 parts.append(f"{span} {label}")
-        pixel = [row for row in billed if row.get("priceMethod") == "cp-pixel"]
+        pixel = [row for row in billed if row.get("priceMethod") == "per-output-megapixel"]
         if pixel:
             amounts = [number(row.get("price")) or 0 for row in pixel]
-            parts.append(f"from {money(min(amounts))} per image, by image size")
+            parts.append(f"from {money(min(amounts))} per output megapixel")
         for row in billed:
-            if row.get("priceMethod") == "cp-readoutput":
+            if row.get("priceMethod") == "reported-price":
                 estimate = number(row.get("price")) or 0
                 note = _note(row)
-                text = "set by the run when it ends"
+                text = "set when the run ends"
                 if estimate > 0:
                     text += f" (estimate {money(estimate)})"
                 if note:
@@ -131,6 +133,8 @@ def price_table(model: Mapping[str, Any], limit: int = 40) -> list[dict]:
         for extra in ("priceExtra", "priceInput"):
             if number(row.get(extra)):
                 entry["extra_block_usd" if extra == "priceExtra" else "per_input_block_usd"] = number(row.get(extra))
+        if (number(row.get("maxSeconds")) or 0) > 0:
+            entry["max_seconds_per_input"] = number(row.get("maxSeconds"))
         if _note(row):
             entry["note"] = _note(row)[:240]
         table.append(entry)
@@ -156,8 +160,8 @@ def _count_of(value: Any) -> int:
 
 def expected_price(model: Mapping[str, Any], params: Mapping[str, Any], outputs: int = 1) -> float | None:
     """The list price of one run with these settings, when the price list fixes it (per run or
-    per output rows); None when it depends on the run (time, tokens, length, size)."""
-    rows = [row for row in price_rows(model) if row.get("priceMethod") in ("cpr", "cpo")]
+    per output file rows); None when it depends on the run (time, tokens, length, size)."""
+    rows = [row for row in price_rows(model) if row.get("priceMethod") in ("per-run", "per-output-file")]
     if not rows:
         return None
     # A run uses the row whose settings all match; among QUANTITY rows, the highest count at or
@@ -186,7 +190,7 @@ def expected_price(model: Mapping[str, Any], params: Mapping[str, Any], outputs:
     if best is None:
         return None
     _matched, _quantities, price, method = best
-    return round(price * max(1, outputs), 6) if method == "cpo" else price
+    return round(price * max(1, outputs), 6) if method == "per-output-file" else price
 
 
 def task_cost(task: Mapping[str, Any]) -> tuple[float | None, str]:

@@ -142,7 +142,7 @@ are transcribed by a Wiro AI model.
 
 ## Pricing
 
-Runs are paid as you go from your Wiro AI wallet, at each model's own price: per run, per output,
+Runs are paid as you go from your Wiro AI wallet, at each model's own price: per run, per output file,
 per second or per character, as the model's page shows. `wiro_search_models` and
 `wiro_model_info` show prices before a run, every result reports what the run cost, and
 `wiro_task` with `action: "list"` shows recent tasks with their cost. Failed tasks are not

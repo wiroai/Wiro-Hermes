@@ -22,8 +22,8 @@ NANO = model("google", "nano-banana-2-1", [
     item("resolution", "select", True, "1K", ["1K", "2K", "4K"]),
     item("aspectRatio", "select", False, "auto", ["auto", "1:1", "3:2", "16:9", "9:16"]),
     item("outputFormat", "select", False, "jpeg", ["jpeg", "png"]),
-], dynamicprice=[{"inputs": {"resolution": "1K"}, "price": 0.0336, "priceMethod": "cpr"},
-                 {"inputs": {"resolution": "2K"}, "price": 0.0504, "priceMethod": "cpr"}])
+], dynamicprice=[{"inputs": {"resolution": "1K"}, "price": 0.0336, "priceMethod": "per-run"},
+                 {"inputs": {"resolution": "2K"}, "price": 0.0504, "priceMethod": "per-run"}])
 
 
 @pytest.fixture

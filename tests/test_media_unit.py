@@ -114,16 +114,27 @@ def rows(*entries):
 
 
 def test_price_summary_forms():
-    assert pricing.price_summary(rows({"price": 0.0336, "priceMethod": "cpr", "inputs": {"resolution": "1K"}},
-                                      {"price": 0.113, "priceMethod": "cpr", "inputs": {"resolution": "4K"}})) \
+    assert pricing.price_summary(rows({"price": 0.0336, "priceMethod": "per-run", "inputs": {"resolution": "1K"}},
+                                      {"price": 0.113, "priceMethod": "per-run", "inputs": {"resolution": "4K"}})) \
         == "$0.0336 to $0.113 per run"
-    assert pricing.price_summary(rows({"price": 0.04, "priceMethod": "cpo"})) == "$0.04 per output"
-    assert pricing.price_summary(rows({"price": 4e-05, "priceMethod": "cp-promptlength"})) \
+    assert pricing.price_summary(rows({"price": 0.04, "priceMethod": "per-output-file"})) == "$0.04 per output file"
+    assert pricing.price_summary(rows({"price": 4e-05, "priceMethod": "per-input-character"})) \
         == "$0.00004 per prompt character"
-    metered = pricing.price_summary(rows({"price": 0, "priceMethod": "cp-readoutput", "note": "Input $1 per 1M tokens."}))
-    assert metered == "set by the run when it ends: Input $1 per 1M tokens."
-    assert pricing.price_summary(rows({"price": 0.1, "priceMethod": "cp-realtimeturn", "note": "rates"})) \
-        == "billed turn by turn in a live session: rates"
+    assert pricing.price_summary(rows({"price": 0.0006, "priceMethod": "per-input-audio-second"})) \
+        == "$0.0006 per second of input audio"
+    assert pricing.price_summary(rows({"price": 0.015, "priceMethod": "per-input-video-second", "maxSeconds": 60},
+                                      {"price": 0.025, "priceMethod": "per-input-video-second", "maxSeconds": 60})) \
+        == "$0.015 to $0.025 per second of input video"
+    assert pricing.price_summary(rows({"price": 0.05, "priceMethod": "per-output-video-second"})) \
+        == "$0.05 per second of output video"
+    assert pricing.price_summary(rows({"price": 1e-05, "priceMethod": "per-total-token"})) \
+        == "$0.00001 per input and output token"
+    pixel = rows({"price": 0.03, "priceMethod": "per-output-megapixel", "priceExtra": 0.015, "priceInput": 0})
+    assert pricing.price_summary(pixel) == "from $0.03 per output megapixel"
+    metered = pricing.price_summary(rows({"price": 0, "priceMethod": "reported-price", "note": "Input $1 per 1M tokens."}))
+    assert metered == "set when the run ends: Input $1 per 1M tokens."
+    assert pricing.price_summary(rows({"price": 0, "priceMethod": "per-realtime-turn", "note": "rates"})) \
+        == "billed per conversation turn in a live session: rates"
     assert pricing.price_summary({"approximatelycost": "0.0121", "dynamicprice": ""}) \
         == "about $0.0121 per run (billed for run time)"
     assert pricing.price_summary({"cps": "0", "quegroupcps": "0.0006"}) == "$0.0006 per second of run time"
@@ -131,15 +142,31 @@ def test_price_summary_forms():
 
 
 def test_expected_price_matches_the_row_for_the_settings():
-    detail = rows({"price": 0.05, "priceMethod": "cpr", "inputs": {"duration": "5", "resolution": "480p"}},
-                  {"price": 0.11, "priceMethod": "cpr", "inputs": {"duration": "5", "resolution": "720p"}},
-                  {"price": 0.03, "priceMethod": "cpo", "inputs": {}})
+    detail = rows({"price": 0.05, "priceMethod": "per-run", "inputs": {"duration": "5", "resolution": "480p"}},
+                  {"price": 0.11, "priceMethod": "per-run", "inputs": {"duration": "5", "resolution": "720p"}},
+                  {"price": 0.03, "priceMethod": "per-output-file", "inputs": {}})
     assert pricing.expected_price(detail, {"duration": "5", "resolution": "720p"}) == 0.11
     assert pricing.expected_price(detail, {"duration": "10"}, outputs=2) == 0.06  # per-output row
-    assert pricing.expected_price(rows({"price": 0, "priceMethod": "cp-readoutput"}), {}) is None
-    quantity = rows({"price": 0.02, "priceMethod": "cpr", "inputs": {"inputImage": "QUANTITY:0"}},
-                    {"price": 0.05, "priceMethod": "cpr", "inputs": {"inputImage": "QUANTITY:1"}})
+    assert pricing.expected_price(rows({"price": 0, "priceMethod": "reported-price"}), {}) is None
+    assert pricing.expected_price(rows({"price": 0.02, "priceMethod": "per-input-video-second"}), {}) is None
+    quantity = rows({"price": 0.02, "priceMethod": "per-run", "inputs": {"inputImage": "QUANTITY:0"}},
+                    {"price": 0.05, "priceMethod": "per-run", "inputs": {"inputImage": "QUANTITY:1"}})
     assert pricing.expected_price(quantity, {"inputImage": ["u"]}) == 0.05
+
+
+def test_price_table_names_the_unit_and_the_input_cap():
+    table = pricing.price_table(rows({"price": 0.025, "priceMethod": "per-input-video-second", "maxSeconds": 60,
+                                      "inputs": {"resolution": "1080p"}},
+                                     {"price": 0.03, "priceMethod": "per-output-megapixel", "priceExtra": 0.015,
+                                      "priceInput": 0.015, "inputs": {"inputImage": "QUANTITY:1"}},
+                                     {"price": 0.05, "priceMethod": "unknown-method"}))
+    assert table == [
+        {"settings": {"resolution": "1080p"}, "price_usd": 0.025, "unit": "per second of input video",
+         "max_seconds_per_input": 60.0},
+        {"settings": {"inputImage": "QUANTITY:1"}, "price_usd": 0.03, "unit": "per output megapixel",
+         "extra_block_usd": 0.015, "per_input_block_usd": 0.015},
+        {"settings": {}, "price_usd": 0.05, "unit": "no fixed price"},
+    ]
 
 
 def test_task_cost_reads_the_charge_first():
