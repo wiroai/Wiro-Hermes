@@ -5,9 +5,10 @@ from __future__ import annotations
 import base64
 import json
 import re
+import subprocess
 
 import pytest
-from conftest import MEDIA_DIR, media_plugin
+from conftest import MEDIA_DIR, ROOT, media_plugin
 from fake_wiro import GLB, JPEG, MP3, MP4, OGG, PNG, item
 
 P = media_plugin.params
@@ -30,6 +31,26 @@ def test_files_go_where_each_field_type_takes_them():
                       "inputDocumentUrlMultiple": "d1,d2"}
     with pytest.raises(ValueError):
         P.put_files(items[1], ["a1", "a2"], {}, items)
+
+
+def test_file_limit_comes_from_maxinputlength():
+    urls = ["u1", "u2", "u3"]
+    capped = item("inputImage", "combinefileinput", maxinputlength=2)
+    with pytest.raises(ValueError, match="at most 2 files"):
+        P.put_files(capped, urls, {}, [capped])
+    misspelled = item("inputImage", "combinefileinput", **{"maxinput" + "lenght": 2})
+    params: dict = {}
+    P.put_files(misspelled, urls, params, [misspelled])
+    assert params == {"inputImage": urls}  # an item with only the old name gets no cap
+
+
+def test_no_misspelled_maxinputlength():
+    # Wiro's catalog names the file limit maxinputlength; no tracked file may bring back the old misspelling.
+    needle = ("maxinput" + "lenght").encode()
+    names = subprocess.run(["git", "ls-files", "-z"], cwd=ROOT, capture_output=True, text=True, check=True).stdout
+    paths = [ROOT / name for name in names.split("\0") if name]
+    found = [str(path.relative_to(ROOT)) for path in paths if path.is_file() and needle in path.read_bytes().lower()]
+    assert not found, f"the misspelled file limit name is back in {found}"
 
 
 def test_fill_required_uses_catalog_values_but_never_samples():

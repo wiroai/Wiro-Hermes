@@ -1,6 +1,6 @@
 name: wiro-media
 kind: standalone
-version: 2.0.1
+version: 2.0.2
 manifest_version: 2
 description: Wiro AI image, video, speech, music, transcription and 3D models as Hermes tools, plus Wiro AI as a backend for image_generate, video_generate, text_to_speech and speech-to-text.
 author: Wiro AI
