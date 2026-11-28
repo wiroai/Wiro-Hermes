@@ -286,7 +286,7 @@ def put_files(item: Mapping[str, Any], urls: list[str], parameters: dict[str, An
     if kind == "combinefileinput":
         limit = 0
         try:
-            limit = int(item.get("maxinputlenght") or item.get("maxinputlength") or 0)
+            limit = int(item.get("maxinputlength") or 0)
         except (TypeError, ValueError):
             limit = 0
         if limit and len(urls) > limit:

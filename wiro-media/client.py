@@ -20,7 +20,7 @@ from collections.abc import Callable, Mapping
 from typing import Any
 from urllib.parse import urlparse
 
-VERSION = "2.0.1"
+VERSION = "2.0.2"
 API_URL = "https://api.wiro.ai/v1"
 USER_AGENT = f"wiro-hermes/{VERSION} (+https://github.com/wiroai/Wiro-Hermes)"
 DEPOSIT_URL = "https://wiro.ai/panel/wallet/deposit/credit-card"
